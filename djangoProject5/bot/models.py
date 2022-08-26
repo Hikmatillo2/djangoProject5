@@ -43,10 +43,14 @@ class AttachmentBot(Attachment):
 
 
 class AttachmentButton(models.Model):
-    file = models.FileField(upload_to='uploads/', blank=True, null=True)
+    file = models.FileField(upload_to='uploads/', blank=True, null=True, verbose_name='Файлы')
 
     def __str__(self):
         return self.file.name[8::]
+
+    class Meta:
+        verbose_name = 'Файл для кнопок'
+        verbose_name_plural = 'Файлы для кнопок'
 
 
 class Admin(models.Model):

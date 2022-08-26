@@ -1,8 +1,8 @@
 import telebot
 from django.core.management.base import BaseCommand
-from ...models import *
-from ...keyboards import InlineKeyboard
-from ...translete_callbacks import translit
+from bot.models import *
+from bot.keyboards import InlineKeyboard
+from bot.translete_callbacks import translit
 
 TOKEN = '5547312177:AAHXe2ZDglnTD7X-F6x7IlwQ-kO5mQYEHVs'
 bot = telebot.TeleBot(TOKEN)

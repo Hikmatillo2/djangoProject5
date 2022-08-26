@@ -5,7 +5,7 @@ from .models import ChildButton
 from .models import GrandParentButton
 
 
-class GrandParentForm(forms.ModelForm):
+class GrandParentForm(forms.ModelForm):  # кнопки 1-го уровня
     class Meta:
         model = GrandParentButton
         fields = ('name', 'text', 'attachment')
@@ -14,7 +14,7 @@ class GrandParentForm(forms.ModelForm):
         }
 
 
-class ParentForm(forms.ModelForm):
+class ParentForm(forms.ModelForm):  # кнопки 2-го уровня
     class Meta:
         model = ParentButton
         fields = ('grandparent', 'name', 'text', 'attachment')
@@ -23,7 +23,7 @@ class ParentForm(forms.ModelForm):
         }
 
 
-class ChildForm(forms.ModelForm):
+class ChildForm(forms.ModelForm):  # кнопки 3-го уровня
     class Meta:
         model = ChildButton
         fields = ('parent', 'name', 'text', 'attachment')
@@ -42,5 +42,3 @@ class AdminForm(forms.ModelForm):
             'last_name': forms.TextInput,
             'mail': forms.TextInput
         }
-
-

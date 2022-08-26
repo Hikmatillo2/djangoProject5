@@ -6,7 +6,7 @@ from bot.bot import bot
 from settings import development
 
 
-@csrf_exempt
+'''@csrf_exempt
 def get_message(request):
     if request.method == 'POST':
         json_string = request.body.decode('utf-8')
@@ -16,4 +16,4 @@ def get_message(request):
     return HttpResponse('Method Not Allowed', 405)
 
 
-bot.set_webhook(url=f'h1km4t1ll0.space/{development.TOKEN}')
+bot.set_webhook(url=f'h1km4t1ll0.space/{development.TOKEN}')'''

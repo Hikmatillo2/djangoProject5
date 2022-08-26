@@ -1,11 +1,10 @@
 import telebot
 from django.core.management.base import BaseCommand
-from bot.models import *
-from bot.keyboards import InlineKeyboard
-from bot.translete_callbacks import translit
+from ...models import *
+from ...keyboards import InlineKeyboard
+from ...translete_callbacks import translit
 
 TOKEN = '5547312177:AAHXe2ZDglnTD7X-F6x7IlwQ-kO5mQYEHVs'
-
 bot = telebot.TeleBot(TOKEN)
 
 USER_CALLBACKS = ['growth_school', 'football', 'piktomir', 'robotics', 'cuboro', 'courses_nine_grade', 'wardrobe',
@@ -122,6 +121,7 @@ def menu_command(message):
             bot.clear_step_handler_by_chat_id(message.chat.id)
 
         keyboard = menu_keyboard()
+
     bot.send_message(chat_id=message.chat.id, text='Главное меню:', parse_mode='html',
                      reply_markup=keyboard)
 
@@ -168,13 +168,12 @@ def doc_handler(message):
 
 
 # GrandParentButton callbacks
-# attachments in buttons???
 @bot.callback_query_handler(
     func=lambda call: call.data in [button.callback for button in GrandParentButton.objects.all()])
 def callback_buttons(call):
     button = list(
         filter(lambda button: button.callback == call.data, [button for button in GrandParentButton.objects.all()]))
-
+    files = []
     if button[0].parent:
         for each in button[0].parent.all():
             each.callback = translit(each.text)[:64]
@@ -186,16 +185,30 @@ def callback_buttons(call):
     else:
         keyboard = None
 
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=button[0].text,
-                          reply_markup=keyboard)
+    if button[0].attachment:
+        for file in button[0].attachment.all():
+            files.append(open('C:/Users/38035/PycharmProjects/djangoProject5/uploads/' + str(file), 'rb'))
+
+        if len(files) > 10:
+            raise FilesLimitExceeded
+
+        try:
+            bot.send_media_group(call.message.chat.id, media=[telebot.types.InputMediaDocument(file) for file in files])
+
+            bot.send_message(call.message.chat.id, text=button[0].text,
+                             reply_markup=keyboard, parse_mode='html')
+        except Exception:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=button[0].text,
+                                  parse_mode='html', reply_markup=keyboard)
 
 
 # ParentButton callbacks
 @bot.callback_query_handler(func=lambda call: call.data in [button.callback for button in ParentButton.objects.all()])
 def callback_buttons(call):
+    global keyboard
     button = list(
         filter(lambda button: button.callback == call.data, [button for button in ParentButton.objects.all()]))
-
+    files = []
     if button[0].child:
         for each in button[0].child.all():
             each.callback = translit(each.text)[:64]
@@ -204,15 +217,21 @@ def callback_buttons(call):
         buttons.append([['<- Назад', button[0].grandparent.callback[:64]], ['Меню', 'menu']])
 
         keyboard = InlineKeyboard(buttons)
-        if button[0].attachment:
-            for file in button[0].attachment.all():
-                print(file)
-                f = open('C:/Users/38035/PycharmProjects/djangoProject5/uploads' + str(file), 'rb')
-                bot.send_document(call.message.chat.id, f, reply_markup=InlineKeyboard([['Скрыть', 'hide']]))
-    else:
-        keyboard = None
-    bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=button[0].text,
-                          reply_markup=keyboard, parse_mode='html')
+
+    if button[0].attachment:
+        for file in button[0].attachment.all():
+            files.append(open('C:/Users/38035/PycharmProjects/djangoProject5/uploads/' + str(file), 'rb'))
+
+        if len(files) > 10:
+            raise FilesLimitExceeded
+        try:
+            bot.send_media_group(call.message.chat.id, media=[telebot.types.InputMediaDocument(file) for file in files])
+
+            bot.send_message(call.message.chat.id, text=button[0].text,
+                             reply_markup=keyboard, parse_mode='html')
+        except Exception:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=button[0].text,
+                                  parse_mode='html', reply_markup=keyboard)
 
 
 # ChildButton callbacks
@@ -230,13 +249,15 @@ def c(call):
         for file in button[0].attachment.all():
             files.append(open('C:/Users/38035/PycharmProjects/djangoProject5/uploads/' + str(file), 'rb'))
 
-    if len(files) > 10:
-        raise FilesLimitExceeded
+        if len(files) > 10:
+            raise FilesLimitExceeded
 
-    bot.send_media_group(call.message.chat.id, media=[telebot.types.InputMediaDocument(file) for file in files])
-
-    bot.send_message(call.message.chat.id, text=button[0].text,
-                     reply_markup=keyboard, parse_mode='html')
+        try:
+            bot.send_media_group(call.message.chat.id, media=[telebot.types.InputMediaDocument(file) for file in files])
+            bot.send_message(call.message.chat.id, text=button[0].text, reply_markup=keyboard, parse_mode='html',)
+        except Exception:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=button[0].text,
+                                  parse_mode='html', reply_markup=keyboard)
 
 
 # static callbacks
@@ -270,7 +291,8 @@ def user_callbacks_handler(call):
                               message_id=call.message.message_id,
                               text='Если у вас ещё остались вопросы, то вы можете связаться с руководителем центра плат'
                                    'ных услуг.\n<b>Науменко-Тарасова Алёна Леонидовна</b> \nПо телефону: <b>355-40-21</'
-                                   'b>\nВ рабочие дни с <b>11:00-16:00</b>', parse_mode='html',
+                                   'b>\nВ рабочие дни с <b>11:00-16:00</b>',
+                              parse_mode='html',
                               reply_markup=InlineKeyboard([['Написать сообщение администратору', 'message'],
                                                            ['<-Назад', 'menu']]))
 
@@ -278,6 +300,7 @@ def user_callbacks_handler(call):
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
                               text='Пришлите мне текст сообщения',
+                              parse_mode='html',
                               reply_markup=None)
         bot.register_next_step_handler_by_chat_id(call.message.chat.id, message_for_admin)
 
@@ -295,7 +318,7 @@ def user_callbacks_handler(call):
         keyboard = menu_keyboard()
 
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text='Главное меню:',
-                              reply_markup=keyboard)
+                              parse_mode='html', reply_markup=keyboard)
 
     elif call.data == 'yes_files':
         for admin in Admin.objects.all():
@@ -303,8 +326,9 @@ def user_callbacks_handler(call):
                                        ' сообщений можно с помощью команды /menu')
 
         bot.edit_message_text(chat_id=call.message.chat.id,
-                              message_id=call.message.message_id, text='Пришлите файлы. После'
-                                                                       ' отправки нажмите на команду /menu',
+                              message_id=call.message.message_id,
+                              text='Пришлите файлы. После отправки нажмите на команду /menu',
+                              parse_mode='html',
                               reply_markup=None)
 
         condition = Condition.objects.get(user=BotUser.objects.get(user_id=call.message.chat.id))
@@ -366,6 +390,7 @@ def admin_callbacks_handler(call):
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
                               text=f'Выберите сообщение. Всего сообщений: {length}',
+                              parse_mode='htm',
                               reply_markup=keyboard)
 
     elif 'backward' in call.data:
@@ -395,6 +420,7 @@ def admin_callbacks_handler(call):
         bot.edit_message_text(chat_id=call.message.chat.id,
                               message_id=call.message.message_id,
                               text=f'Выберите сообщение. Всего сообщений: {length}',
+                              parse_mode='html',
                               reply_markup=keyboard)
 
     elif 'respond' in call.data:

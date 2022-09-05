@@ -187,7 +187,7 @@ def callback_buttons(call):
 
     if button[0].attachment:
         for file in button[0].attachment.all():
-            files.append(open('djangoProject5/uploads/' + str(file), 'rb'))
+            files.append(open('/uploads/' + str(file), 'rb'))
 
         if len(files) > 10:
             raise FilesLimitExceeded
@@ -220,7 +220,7 @@ def callback_buttons(call):
 
     if button[0].attachment:
         for file in button[0].attachment.all():
-            files.append(open('djangoProject5/uploads/' + str(file), 'rb'))
+            files.append(open('/uploads/' + str(file), 'rb'))
 
         if len(files) > 10:
             raise FilesLimitExceeded
@@ -247,7 +247,7 @@ def c(call):
 
     if button[0].attachment:
         for file in button[0].attachment.all():
-            files.append(open('djangoProject5/uploads/' + str(file), 'rb'))
+            files.append(open('/uploads/' + str(file), 'rb'))
 
         if len(files) > 10:
             raise FilesLimitExceeded

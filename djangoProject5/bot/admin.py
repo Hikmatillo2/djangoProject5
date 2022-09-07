@@ -59,3 +59,8 @@ class ChildButtonAdmin(admin.ModelAdmin):
 @admin.register(AttachmentButton)
 class AttachmentButtonAdmin(admin.ModelAdmin):
     list_display = ('file',)
+
+    
+@admin.register(MessageBot)
+class AttachmentButtonAdmin(admin.ModelAdmin):
+    list_display = ('user', 'text', )
